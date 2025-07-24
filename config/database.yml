@@ -1,0 +1,32 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  # For details on connection pooling, see rails configuration guide
+  # http://guides.rubyonrails.org/configuring.html#database-pooling
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  url: <%= ENV.fetch('DATABASE_URL') { 'postgres://localhost/concora_emulator_development' } %>
+  migrations_paths: "db/migrate"
+
+test:
+  <<: *default
+  url: <%= ENV.fetch('TESTDB_DATABASE_URL') { 'postgres://localhost/concora_emulator_test' } %>
+  migrations_paths: "db/migrate"
+
+nonprod:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  migrations_paths: "db/migrate"
+
+learning:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  migrations_paths: "db/migrate"
+
+production:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  migrations_paths: "db/migrate"
+

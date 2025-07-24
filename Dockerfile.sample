@@ -1,0 +1,88 @@
+FROM ruby:3.1-alpine as base
+
+ENV BUNDLE_ENTERPRISE__CONTRIBSYS__COM="28aa986a:78fe1515"
+
+RUN apk update && apk upgrade && apk --no-cache add \
+  tzdata \
+  bash \
+  git \
+  build-base \
+  libstdc++ \
+  ca-certificates \
+  ruby-dev \
+  curl \
+  libffi-dev \
+  postgresql-dev \
+  linux-headers \
+  libpq \
+  openssh \
+  file \
+  nodejs \
+  npm \
+  yarn \
+  shared-mime-info \
+  && echo ‘gem: --no-document’ > /etc/gemrc && \
+  find / -type f -iname \*.apk-new -delete && \
+  rm -rf /var/cache/apk/*
+
+RUN mkdir -p /root/.ssh && \
+  chmod 0700 /root/.ssh && \
+  ssh-keyscan github.com > /root/.ssh/known_hosts
+
+ARG PRIVATE
+ARG PUBLIC
+RUN echo -e "$PRIVATE" > /root/.ssh/id_rsa && \
+  echo "$PUBLIC" > /root/.ssh/id_rsa.pub && \
+  chmod 600 /root/.ssh/id_rsa && \
+  chmod 644 /root/.ssh/id_rsa.pub
+
+ARG GITHUB_TOKEN
+ARG GITHUB_USERNAME
+RUN bundle config https://rubygems.pkg.github.com/acima-credit $GITHUB_USERNAME:$GITHUB_TOKEN
+
+WORKDIR /app
+COPY Gemfile .
+COPY Gemfile.lock .
+
+ENV BUNDLER_VER 2.3.11
+RUN gem install bundler:$BUNDLER_VER
+
+COPY . .
+COPY *.env *.yaml /config/
+
+RUN bundle install \
+  --without development test \
+  --deployment && \
+  rm -rf /usr/lib/lib/ruby/gems/*/cache/* && \
+  rm -rf ~/.gem
+
+ENTRYPOINT ["bundle", "exec"]
+CMD ["rails", "server", "-b", "0.0.0.0"]
+
+# Deploy Image
+FROM base as deploy
+RUN rm -rf /root/.ssh
+
+# CI Image
+FROM base as ci
+
+RUN curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ../cc-test-reporter
+RUN chmod +x ../cc-test-reporter
+
+RUN bundle install \
+  --with test \
+  --deployment
+
+RUN rm -rf /root/.ssh
+
+# Dev Image
+# This was injected by the acima/container_tools gem without regard
+# to restructuring the Dockerfile. You should review your docker file
+# ensuring this adjustment is properly added.
+FROM base as dev
+
+RUN bundle install \
+  --with test development \
+  --deployment
+
+RUN rm -rf /root/.ssh

@@ -1,0 +1,20 @@
+---
+
+name: concora-emulator
+
+env:
+
+  default:
+    env_file:
+      - .env
+    container:
+      - name: default
+        port: 3000
+    job:
+      - name: db-migrate
+        command: [bundle, exec, rake, "db:migrate"]
+    postgres:
+      - name: primary
+    secret:
+      - name: SECRET_KEY_BASE
+        length: 128

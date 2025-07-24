@@ -1,0 +1,177 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "RAC Data API V1",
+    "version": "v1"
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "description": "...",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "basePath": "/v1",
+  "definitions": {
+    "customer_details": {
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string"
+        },
+        "ssn": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name":{
+          "type": "string"
+        },
+        "dob":{
+          "type": "string"
+        },
+        "email_address": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "$ref": "#/definitions/address"
+        }
+      },
+      "required": ["guid","ssn","first_name","last_name","dob","email_address","phone_number","address"]
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street_address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state_code": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        }
+      },
+      "required": ["street_address","city","state_code","zip_code"]
+    },
+    "lease": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string"
+        },
+        "lease_number": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "extended_status": {
+          "type": "string"
+        },
+        "lease_amount_cents": {
+          "type": "integer"
+        },
+        "lease_approval_amount_cents": {
+          "type": "integer"
+        },
+        "funded_date": {
+          "type": "string"
+        }
+      }
+    },
+    "customer_history": {
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string"
+        },
+        "rac_customer_id": {
+          "type": "integer"
+        },
+        "in_bankruptcy": {
+          "type": "boolean"
+        },
+        "in_deferment": {
+          "type": "boolean"
+        },
+        "in_legal_hold": {
+          "type": "boolean"
+        },
+        "leases": {
+          "type": "array",
+          "description": "Array of leases",
+          "items": {
+            "$ref": "#/definitions/lease"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/customer/lease_history": {
+      "post": {
+        "summary": "Locate a customers lease history.",
+        "tags": [
+          "Lease history"
+        ],
+        "description": "This endpoint is used to locate RAC lease history for a specific customer.",
+        "parameters": [
+          {
+            "name": "customer",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/customer_details"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "Bearer": {
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer history retrieved",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/customer_history"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "examples": {
+              "application/json": {
+                "status": "error",
+                "message": "Bad Request",
+                "code": 400,
+                "errors": {
+                  "address[street_address]": "must be filled"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access is denied"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    }
+  }
+}

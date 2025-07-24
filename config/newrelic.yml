@@ -1,0 +1,22 @@
+common: &default_settings
+  license_key: <%= ENV['NEW_RELIC_LICENSE_KEY'].to_s %>
+  app_name: app-name
+  monitor_mode: false
+  log_level: info
+
+development:
+  <<: *default_settings
+  app_name: app-name.development
+
+test:
+  <<: *default_settings
+
+nonprod:
+  <<: *default_settings
+  app_name: app-name.nonprod
+
+production:
+  <<: *default_settings
+  app_name: app-name.production
+  distributed_tracing.enabled: true
+  monitor_mode: true

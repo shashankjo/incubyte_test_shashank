@@ -1,0 +1,18 @@
+version: '3.5'
+services:
+  web:
+    build:
+      context: .
+      target: dev
+      args:
+        GITHUB_TOKEN: $GITHUB_TOKEN
+        GITHUB_USERNAME: $GITHUB_USERNAME
+    image: local-concora_emulator
+    command: rails server -b 0.0.0.0
+    environment:
+      DEV_CONTAINER: 'true'
+      RACK_ENV: development
+      DOCKER_DENV: 'true'
+    ports:
+      - "3077:3077"
+

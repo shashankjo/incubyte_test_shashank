@@ -1,0 +1,8 @@
+---
+:concurrency: <%= ENV['SIDEKIQ_CONCURRENCY'] || 5 %>
+:timeout: <%= ENV['SIDEKIQ_GRACEFUL_SHUTDOWN_TIME'] || 80 %>
+
+:queues:
+  - app-name
+  - rollbar
+  - file_set_monitor
